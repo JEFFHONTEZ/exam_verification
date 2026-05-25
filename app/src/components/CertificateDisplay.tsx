@@ -21,11 +21,11 @@ interface Props {
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+    <div className="flex flex-col gap-1">
+      <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-sm text-gray-900">{value}</span>
+      <span className="text-base text-gray-900">{value}</span>
     </div>
   );
 }
@@ -38,71 +38,83 @@ export default function CertificateDisplay({ record }: Props) {
 
   const missing = expectedKeys.filter((k) => record[k] === null || record[k] === undefined);
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Verified Banner */}
-      <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4 mb-6">
-        <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-        <div>
-          <p className="text-sm font-semibold text-green-800">Certificate Verified</p>
-          <p className="text-xs text-green-600">
-            ID: {record.verificationId} · Issued{' '}
-            {new Date(record.createdAt).toLocaleDateString('en-GB', {
-              day: '2-digit', month: 'long', year: 'numeric',
-            })}
-          </p>
+    <div className="mx-auto">
+      {/* Light blue hero panel like Alison */}
+      <div className="alison-hero rounded-2xl p-6 md:p-8 mb-10 bg-contain bg-no-repeat bg-center" style={{ backgroundImage: 'url(https://res.cloudinary.com/dekilw4yx/image/upload/v1779669679/light-blue-hero-background_jx5k6o.png)' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800 mb-3 md:mb-4">{record.name}</h2>
+
+            <div className="space-y-3 text-slate-700 text-sm md:text-base">
+              <div>
+                <span className="font-semibold">Alison ID:</span>{' '}
+                <span className="">{record.studentId}</span>
+              </div>
+              <div>
+                <span className="font-semibold">Course Completed:</span>{' '}
+                <span className="">{record.courseCompleted}</span>
+              </div>
+              <div>
+                <span className="font-semibold">Date of Completion:</span>{' '}
+                <span className="">{formatDate(record.dateOfCompletion)}</span>
+              </div>
+              <div>
+                <span className="font-semibold">Email:</span>{' '}
+                <span className="">{record.email}</span>
+              </div>
+              <div>
+                <span className="font-semibold">Total Study Time:</span>{' '}
+                <span className="">{formatStudyTime(record.totalStudyTime)}</span>
+              </div>
+            </div>
+
+            {/* stat boxes */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg bg-white p-4 shadow-sm">
+                <div className="sm:pr-4">
+                  <div className="text-sm font-semibold">Final Assessment Score</div>
+                  <div className="text-xs text-slate-500">Minimum 80% required to pass the final assessment</div>
+                </div>
+                <div className="mt-3 sm:mt-0 text-3xl sm:text-4xl font-extrabold text-slate-800">{record.finalAssessmentScore}%</div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg bg-white p-4 shadow-sm">
+                <div className="sm:pr-4">
+                  <div className="text-sm font-semibold">CPD Hours Completed</div>
+                  <div className="text-xs text-slate-500">CPD approved learning hours completed through this course</div>
+                </div>
+                <div className="mt-3 sm:mt-0 text-3xl sm:text-4xl font-extrabold text-slate-800">{record.cpdHoursCompleted || '1-2'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-start justify-end">
+            {/* Illustration on the right (placeholder svg) */}
+            <img src="/images/hero-illustration.svg" alt="illustration" className="w-28 h-28 md:w-36 md:h-36 object-contain" />
+          </div>
         </div>
       </div>
 
-      {/* Student Details */}
-      <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
-        {/* Header */}
-        <div className="bg-gray-900 px-6 py-5">
-          <h1 className="text-xl font-semibold text-white">{record.name}</h1>
-          <p className="text-sm text-gray-400 mt-1">{record.courseCompleted}</p>
-        </div>
+      {/* Course Information section */}
+      <div className="max-w-3xl mx-auto">
+        <h3 className="text-2xl font-semibold text-slate-800 mb-4">Course Information</h3>
+        <p className="text-base text-slate-700 leading-relaxed mb-6 whitespace-pre-wrap">{record.courseInformation}</p>
 
-        {/* Core fields */}
-        <div className="grid grid-cols-2 gap-6 px-6 py-5 border-b border-gray-100">
-          <Field label="Student ID" value={record.studentId} />
-          <Field label="Email" value={record.email} />
-          <Field label="Date of Completion" value={formatDate(record.dateOfCompletion)} />
-          <Field label="Total Study Time" value={formatStudyTime(record.totalStudyTime)} />
-          <Field label="Final Assessment Score" value={`${record.finalAssessmentScore}%`} />
-          <Field label="CPD Hours Completed" value={`${record.cpdHoursCompleted} hours`} />
-        </div>
-
-        {/* Course Information */}
-        <div className="px-6 py-5 border-b border-gray-100">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide block mb-2">
-            Course Information
-          </span>
-          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {record.courseInformation}
-          </p>
-        </div>
-
-        {/* Modules Completed */}
-        <div className="px-6 py-5">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide block mb-2">
-            Modules Completed
-          </span>
-          <p className="text-sm text-gray-700">{record.modulesCompleted}</p>
+        <h3 className="text-2xl font-semibold text-slate-800 mb-4">Modules Completed</h3>
+        <div className="space-y-4">
+          <p className="text-base text-slate-700">{record.modulesCompleted}</p>
         </div>
       </div>
 
       {/* Print hint */}
       {missing.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-8">
           <p className="text-xs text-yellow-800">Note: This record is missing some expected fields and may be incomplete.</p>
           <p className="text-xs text-yellow-700 mt-1">Missing: {missing.join(', ')}</p>
         </div>
       )}
 
-      <p className="text-center text-xs text-gray-400 mt-6">
-        Verified at {typeof window !== 'undefined' ? window.location.href : ''}
-      </p>
+      <p className="text-center text-xs text-gray-400 mt-6">Verified at {typeof window !== 'undefined' ? window.location.href : ''}</p>
     </div>
   );
 }

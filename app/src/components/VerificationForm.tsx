@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createVerification } from '@/lib/api';
 import WordCountTextarea from './WordCountTextarea';
+import TagInput from './TagInput';
 
 const schema = z.object({
   name: z.string().min(1, 'Full name is required'),
@@ -34,12 +35,9 @@ const schema = z.object({
       'Maximum 500 words',
     ),
   modulesCompleted: z
-    .string()
-    .min(1, 'Modules completed is required')
-    .refine(
-      (v) => v.trim().split(/\s+/).filter(Boolean).length <= 30,
-      'Maximum 30 words',
-    ),
+    .array(z.string())
+    .min(1, 'At least one module is required')
+    .max(30, 'Maximum 30 modules'),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -72,7 +70,7 @@ export default function VerificationForm({ token }: Props) {
       finalAssessmentScore: '',
       cpdHoursCompleted: '',
       courseInformation: '',
-      modulesCompleted: '',
+      modulesCompleted: [],
     },
   });
 
@@ -139,7 +137,7 @@ export default function VerificationForm({ token }: Props) {
                   await navigator.clipboard.writeText(qrResult.verificationUrl);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
-                } catch (e) {
+                } catch {
                   // ignore clipboard errors
                 }
               }}
@@ -170,97 +168,97 @@ export default function VerificationForm({ token }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Name */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Full Name</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Full Name</label>
             <input
               {...register('name')}
               placeholder="Jane Doe"
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.name ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.name ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
           </div>
 
           {/* Student ID */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Student ID</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Student ID</label>
             <input
               {...register('studentId')}
               placeholder="STU-2024-001"
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.studentId ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.studentId ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.studentId && <span className="text-xs text-red-500">{errors.studentId.message}</span>}
           </div>
 
           {/* Course Completed */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Course Completed</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Course Completed</label>
             <input
               {...register('courseCompleted')}
               placeholder="Digital Marketing"
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.courseCompleted ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.courseCompleted ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.courseCompleted && <span className="text-xs text-red-500">{errors.courseCompleted.message}</span>}
           </div>
 
           {/* Date of Completion */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Date of Completion</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Date of Completion</label>
             <input
               {...register('dateOfCompletion')}
               placeholder="230526 (DDMMYY)"
               maxLength={6}
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.dateOfCompletion ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.dateOfCompletion ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.dateOfCompletion && <span className="text-xs text-red-500">{errors.dateOfCompletion.message}</span>}
           </div>
 
           {/* Email */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Email</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Email</label>
             <input
               {...register('email')}
               type="email"
               placeholder="jane@example.com"
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.email ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.email ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.email && <span className="text-xs text-red-500">{errors.email.message}</span>}
           </div>
 
           {/* Total Study Time */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Total Study Time</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Total Study Time</label>
             <input
               {...register('totalStudyTime')}
               placeholder="0430 (HHMM)"
               maxLength={4}
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.totalStudyTime ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.totalStudyTime ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.totalStudyTime && <span className="text-xs text-red-500">{errors.totalStudyTime.message}</span>}
           </div>
 
           {/* Final Assessment Score */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Final Assessment Score (%)</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">Final Assessment Score (%)</label>
             <input
               {...register('finalAssessmentScore')}
               type="number"
               min={0}
               max={100}
               placeholder="88"
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.finalAssessmentScore ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.finalAssessmentScore ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.finalAssessmentScore && <span className="text-xs text-red-500">{errors.finalAssessmentScore.message}</span>}
           </div>
 
           {/* CPD Hours */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">CPD Hours Completed</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-900">CPD Hours Completed</label>
             <input
               {...register('cpdHoursCompleted')}
               type="number"
               min={0}
               placeholder="4"
-              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.cpdHoursCompleted ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+              className={`rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition ${errors.cpdHoursCompleted ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.cpdHoursCompleted && <span className="text-xs text-red-500">{errors.cpdHoursCompleted.message}</span>}
           </div>
@@ -276,12 +274,10 @@ export default function VerificationForm({ token }: Props) {
         />
 
         {/* Modules Completed */}
-        <WordCountTextarea
+        <TagInput
           name="modulesCompleted"
           label="Modules Completed"
-          maxWords={30}
-          rows={2}
-          placeholder="Module 1: Introduction, Module 2: Advanced..."
+          placeholder="Enter module name and press Enter or click Add Module"
         />
 
         <button

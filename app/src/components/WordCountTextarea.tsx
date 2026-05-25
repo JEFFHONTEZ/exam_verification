@@ -28,15 +28,15 @@ export default function WordCountTextarea({
   const isOver = wordCount > maxWords;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-gray-900">
         {label}
       </label>
       <textarea
         {...register(name)}
         rows={rows}
         placeholder={placeholder}
-        className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none ${
+        className={`w-full rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder-gray-500 bg-white focus:outline-none focus:ring-2 resize-none transition ${
           errors[name]
             ? 'border-red-400 focus:ring-red-300'
             : 'border-gray-300 focus:ring-blue-300'
@@ -44,13 +44,13 @@ export default function WordCountTextarea({
       />
       <div className="flex justify-between items-center text-xs">
         {errors[name] ? (
-          <span className="text-red-500">
+          <span className="text-red-500 font-medium">
             {errors[name]?.message as string}
           </span>
         ) : (
-          <span className="text-gray-400">Max {maxWords} words</span>
+          <span className="text-gray-600">Max {maxWords} words</span>
         )}
-        <span className={isOver ? 'text-red-500 font-medium' : 'text-gray-400'}>
+        <span className={isOver ? 'text-red-500 font-medium' : 'text-gray-600'}>
           {wordCount} / {maxWords}
         </span>
       </div>

@@ -91,7 +91,7 @@ export class VerificationController {
       final_assessment_score: 85,
       cpd_hours_completed: 2,
       course_information: 'This is a sample course used for testing.',
-      modules_completed: 'Module 1, Module 2',
+      modules_completed: ['Module 1', 'Module 2'],
     };
 
     const frontendBase = process.env.FRONTEND_URL || undefined;

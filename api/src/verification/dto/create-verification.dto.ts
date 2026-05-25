@@ -6,6 +6,8 @@ import {
   Max,
   Matches,
   IsNotEmpty,
+  IsArray,
+  ArrayMinSize,
 } from 'class-validator';
 import { Transform, Expose } from 'class-transformer';
 
@@ -58,7 +60,8 @@ export class CreateVerificationDto {
   course_information!: string;
 
   @Expose({ name: 'modulesCompleted' })
-  @IsString()
-  @IsNotEmpty({ message: 'Modules completed is required' })
-  modules_completed!: string;
+  @IsArray({ message: 'Modules must be an array' })
+  @ArrayMinSize(1, { message: 'At least one module is required' })
+  @IsString({ each: true, message: 'Each module must be a string' })
+  modules_completed!: string[];
 }

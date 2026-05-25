@@ -1,6 +1,31 @@
 import { getVerification } from '@/lib/api';
 import CertificateDisplay from '@/components/CertificateDisplay';
 import InvalidCertificate from '@/components/InvalidCertificate';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+
+interface VerificationRecord {
+  verificationId: string | null;
+  name: string | null;
+  studentId: string | null;
+  courseCompleted: string | null;
+  dateOfCompletion: string | null;
+  email: string | null;
+  totalStudyTime: string | null;
+  finalAssessmentScore: number | null;
+  cpdHoursCompleted: number | null;
+  courseInformation: string | null;
+  modulesCompleted: string[] | null;
+  createdAt: string | null;
+}
+
+interface VerificationError {
+  error: string;
+  status: number;
+  raw: unknown;
+}
+
+type VerificationResult = VerificationRecord | VerificationError | null;
 
 interface Props {
   params: Promise<{ id: string }> | { id: string };
@@ -11,10 +36,14 @@ export default async function VerifyPage({ params }: Props) {
 
   if (!id) {
     return (
-      <div className="min-h-screen bg-gray-50 py-10 px-4">
-        <div className="max-w-2xl mx-auto">
-          <InvalidCertificate message="Missing verification id" />
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <div className="min-h-screen bg-gray-50 py-10 px-4 flex-1">
+          <div className="max-w-2xl mx-auto">
+            <InvalidCertificate message="Missing verification id" />
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -22,22 +51,30 @@ export default async function VerifyPage({ params }: Props) {
   const recordOrError = await getVerification(id);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-            Certificate Verification
-          </p>
-        </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <div className="bg-gray-50 py-10 px-4 flex-1">
+        <div className="max-w-4xl mx-auto">
+          {/* Page title and lead sentence - mirrors Alison's verify page */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4">Your Learner Verification</h1>
+            <p className="text-base text-slate-700">{
+              recordOrError && !('error' in recordOrError) && recordOrError?.name
+                ? `This is to verify that ${ recordOrError.name } has completed the course ${ recordOrError.courseCompleted } on Alison.`
+                : 'This is to verify the details of the certificate.'
+            }</p>
+          </div>
 
-        {/* If the API returned an error object, render InvalidCertificate with details */}
-        {recordOrError && (recordOrError as any).error ? (
-          <InvalidCertificate message={(recordOrError as any).error} details={(recordOrError as any).raw} />
-        ) : (
-          // recordOrError will be the normalized record or null
-          (recordOrError ? <CertificateDisplay record={recordOrError as any} /> : <InvalidCertificate />)
-        )}
+          {/* If the API returned an error object, render InvalidCertificate with details */}
+          {recordOrError && 'error' in recordOrError ? (
+            <InvalidCertificate message={recordOrError.error} details={recordOrError.raw} />
+          ) : (
+            // recordOrError will be the normalized record or null
+            (recordOrError ? <CertificateDisplay record={recordOrError} /> : <InvalidCertificate />)
+          )}
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

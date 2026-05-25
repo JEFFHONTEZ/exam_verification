@@ -39,29 +39,31 @@ export default function AdminUploadPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-base font-semibold text-gray-900">
-            Verification Records
-          </h1>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Create a new student certificate
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link href="/admin/records" className="text-sm text-blue-600 hover:underline">Records</Link>
-          <button
-            onClick={handleLogout}
-            disabled={signingOut}
-            className="text-xs text-gray-500 hover:text-red-500 disabled:opacity-50 transition"
-          >
-            {signingOut ? 'Signing out...' : 'Sign out'}
-          </button>
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Create Verification Record</h1>
+            <p className="text-sm text-gray-600 mt-1">Add a new student certificate</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/admin/records" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition">
+              Records
+            </Link>
+            <button
+              onClick={handleLogout}
+              disabled={signingOut}
+              className="text-sm text-gray-600 hover:text-red-600 disabled:opacity-50 transition"
+            >
+              {signingOut ? 'Signing out...' : 'Sign out'}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           <VerificationForm token={token} />
         </div>
       </main>

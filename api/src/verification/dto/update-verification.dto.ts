@@ -6,6 +6,8 @@ import {
   Min,
   Max,
   Matches,
+  IsArray,
+  ArrayMinSize,
 } from 'class-validator';
 import { Transform, Expose } from 'class-transformer';
 
@@ -63,6 +65,8 @@ export class UpdateVerificationDto {
 
   @IsOptional()
   @Expose({ name: 'modulesCompleted' })
-  @IsString()
-  modules_completed?: string;
+  @IsArray({ message: 'Modules must be an array' })
+  @ArrayMinSize(1, { message: 'At least one module is required' })
+  @IsString({ each: true, message: 'Each module must be a string' })
+  modules_completed?: string[];
 }

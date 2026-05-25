@@ -43,7 +43,6 @@ export class VerificationService {
   }> {
     // Enforce word count limits before touching the database
     const courseWords = this.countWords(dto.course_information);
-    const moduleWords = this.countWords(dto.modules_completed);
 
     if (courseWords > 500) {
       throw new BadRequestException(
@@ -51,9 +50,10 @@ export class VerificationService {
       );
     }
 
-    if (moduleWords > 30) {
+    // Validate modules array
+    if (!Array.isArray(dto.modules_completed) || dto.modules_completed.length === 0) {
       throw new BadRequestException(
-        `modules_completed exceeds 30 words (current: ${moduleWords})`,
+        'modules_completed must be a non-empty array',
       );
     }
 
@@ -98,10 +98,12 @@ export class VerificationService {
     }
 
     const data = insertTyped.data;
-    
+
     if (!data) {
       console.error('Supabase insert returned no data');
-      throw new InternalServerErrorException('Failed to save verification record (no data)');
+      throw new InternalServerErrorException(
+        'Failed to save verification record (no data)',
+      );
     }
 
     // Generate QR code as a base64 data URL
@@ -199,10 +201,10 @@ export class VerificationService {
     }
 
     if (dto.modules_completed) {
-      const moduleWords = this.countWords(dto.modules_completed as string);
-      if (moduleWords > 30) {
+      // Validate modules array
+      if (!Array.isArray(dto.modules_completed) || dto.modules_completed.length === 0) {
         throw new BadRequestException(
-          `modules_completed exceeds 30 words (current: ${moduleWords})`,
+          'modules_completed must be a non-empty array',
         );
       }
     }

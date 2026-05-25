@@ -55,7 +55,7 @@ export interface CreateVerificationPayload {
   finalAssessmentScore: number;
   cpdHoursCompleted: number;
   courseInformation: string;
-  modulesCompleted: string;
+  modulesCompleted: string[];
 }
 function mapRecord(raw: any) {
   if (!raw) return null;
