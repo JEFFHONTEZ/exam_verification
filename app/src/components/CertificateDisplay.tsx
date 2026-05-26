@@ -33,9 +33,18 @@ export default function CertificateDisplay({ record }: Props) {
       return record.modulesCompleted;
     }
     if (typeof record.modulesCompleted === 'string') {
+      // Try to parse as JSON first
+      try {
+        const parsed = JSON.parse(record.modulesCompleted);
+        if (Array.isArray(parsed)) {
+          return parsed.map(m => String(m).trim()).filter(Boolean);
+        }
+      } catch {
+        // Not JSON, continue with string parsing
+      }
       // Handle comma-separated or newline-separated modules
       return record.modulesCompleted
-        .split(/[,\n]/)
+        .split(/[,\n\[\]"]/)
         .map((m) => m.trim())
         .filter(Boolean);
     }
