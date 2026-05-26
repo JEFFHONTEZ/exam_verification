@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -8,6 +8,7 @@ import {
   updateVerification,
   deleteVerification,
   CreateVerificationPayload,
+  ApiError,
 } from '@/lib/api';
 import { getTokenFromCookie, clearTokenCookie } from '@/lib/utils';
 import { signOut } from '@/lib/api';
@@ -39,6 +40,7 @@ export default function AdminRecordsPage() {
   const pageSize = 10;
   const [total, setTotal] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = getTokenFromCookie();
@@ -49,41 +51,74 @@ export default function AdminRecordsPage() {
 
   useEffect(() => {
     if (!token) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
+    setError(null);
     (async () => {
       try {
         const res = await listVerifications(token, { q: search || undefined, page, pageSize });
         setRecords(res.data || []);
         setTotal(res.meta?.total ?? (res.data ? res.data.length : 0));
       } catch (err) {
-        console.error(err);
+        if (err instanceof ApiError && err.isUnauthorized()) {
+          clearTokenCookie();
+          router.replace('/admin/login');
+        } else if (err instanceof ApiError) {
+          setError(`Error: ${err.message}`);
+          console.error(err);
+        } else {
+          setError('Failed to load records');
+          console.error(err);
+        }
       } finally {
         setLoading(false);
       }
     })();
-  }, [token, page, pageSize, search]);
+  }, [token, page, pageSize, search, router]);
 
   const handleEdit = (rec: VerificationRecord) => setEditing(rec);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this record? This cannot be undone.')) return;
     try {
+      setError(null);
       await deleteVerification(id, token);
-      setRecords((r) => r.filter((x) => x.verification_id !== id));
+      setRecords((r: VerificationRecord[]) => r.filter((x) => x.verification_id !== id));
     } catch (err) {
+      if (err instanceof ApiError && err.isUnauthorized()) {
+        clearTokenCookie();
+        router.replace('/admin/login');
+      } else if (err instanceof ApiError) {
+        setError(`Delete failed: ${err.message}`);
+        alert(`Failed to delete: ${err.message}`);
+      } else {
+        setError('Failed to delete record');
+        alert('Failed to delete');
+      }
       console.error(err);
-      alert('Failed to delete');
     }
   };
 
   const handleSave = async (id: string, updates: Partial<CreateVerificationPayload>) => {
     try {
+      setError(null);
       const updated = await updateVerification(id, updates, token);
-      setRecords((r) => r.map((x) => (x.verification_id === id ? updated : x)));
+      setRecords((r: VerificationRecord[]): VerificationRecord[] => r.map((x: VerificationRecord) => (x.verification_id === id ? (updated as VerificationRecord) : x)));
       setEditing(null);
     } catch (err) {
-      console.error(err);
-      alert('Failed to update');
+      if (err instanceof ApiError && err.isUnauthorized()) {
+        setError('Your session has expired. Please log in again.');
+        clearTokenCookie();
+        setTimeout(() => router.replace('/admin/login'), 2000);
+      } else if (err instanceof ApiError) {
+        const errorMsg = err.message || 'Failed to update record';
+        setError(`Update failed: ${errorMsg}`);
+        alert(`Failed to update: ${errorMsg}`);
+      } else {
+        setError('Failed to update record');
+        alert('Failed to update');
+      }
+      console.error('Save error:', err);
     }
   };
 
@@ -142,6 +177,28 @@ export default function AdminRecordsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-800">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-600 hover:text-red-800 ml-3"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-12">

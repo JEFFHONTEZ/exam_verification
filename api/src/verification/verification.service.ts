@@ -14,6 +14,25 @@ type VerificationRecord = CreateVerificationDto & {
   created_at: string;
 };
 
+// Retry helper with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 500,
+): Promise<T> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === maxRetries - 1) throw err;
+      const delay = delayMs * Math.pow(2, attempt);
+      console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`, (err as Error).message);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
 // A simple function to generate a short unique ID
 // We use crypto.randomUUID() available in Node 14.17+
 function generateVerificationId(): string {
@@ -124,11 +143,17 @@ export class VerificationService {
   async findByVerificationId(
     verification_id: string,
   ): Promise<VerificationRecord> {
-    const res = await this.supabase.adminClient
-      .from('verification_records')
-      .select('*')
-      .eq('verification_id', verification_id)
-      .single();
+    const res = await retryWithBackoff(
+      async () => {
+        return await this.supabase.adminClient
+          .from('verification_records')
+          .select('*')
+          .eq('verification_id', verification_id)
+          .single();
+      },
+      3,
+      500,
+    );
 
     const typed = res as { data: VerificationRecord | null; error?: unknown };
 
@@ -152,22 +177,28 @@ export class VerificationService {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    let builder: any = this.supabase.adminClient
-      .from('verification_records')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false });
+    const res = await retryWithBackoff(
+      async () => {
+        let builder: any = this.supabase.adminClient
+          .from('verification_records')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false });
 
-    if (q) {
-      // Search across several text fields using ilike
-      const like = `%${q}%`;
-      builder = builder.or(
-        `name.ilike.${like},student_id.ilike.${like},verification_id.ilike.${like},course_completed.ilike.${like}`,
-      );
-    }
+        if (q) {
+          // Search across several text fields using ilike
+          const like = `%${q}%`;
+          builder = builder.or(
+            `name.ilike.${like},student_id.ilike.${like},verification_id.ilike.${like},course_completed.ilike.${like}`,
+          );
+        }
 
-    builder = builder.range(from, to);
+        builder = builder.range(from, to);
+        return await builder;
+      },
+      3,
+      500,
+    );
 
-    const res = await builder;
     const typed = res as {
       data: VerificationRecord[] | null;
       error?: unknown;
@@ -209,12 +240,21 @@ export class VerificationService {
       }
     }
 
-    const res = await this.supabase.adminClient
-      .from('verification_records')
-      .update(dto)
-      .eq('verification_id', verification_id)
-      .select()
-      .single();
+    console.log('Update request - attempting with retry:', { verification_id });
+
+    const res = await retryWithBackoff(
+      async () => {
+        const result = await this.supabase.adminClient
+          .from('verification_records')
+          .update(dto)
+          .eq('verification_id', verification_id)
+          .select()
+          .single();
+        return result;
+      },
+      3,
+      500,
+    );
 
     const typed = res as { data: VerificationRecord | null; error?: unknown };
 
@@ -227,16 +267,25 @@ export class VerificationService {
       throw new NotFoundException('Record not found');
     }
 
+    console.log('Update successful:', { verification_id });
     return typed.data;
   }
 
   async remove(verification_id: string) {
-    const res = await this.supabase.adminClient
-      .from('verification_records')
-      .delete()
-      .eq('verification_id', verification_id)
-      .select()
-      .single();
+    console.log('Delete request - attempting with retry:', { verification_id });
+
+    const res = await retryWithBackoff(
+      async () => {
+        return await this.supabase.adminClient
+          .from('verification_records')
+          .delete()
+          .eq('verification_id', verification_id)
+          .select()
+          .single();
+      },
+      3,
+      500,
+    );
 
     const typed = res as { data: VerificationRecord | null; error?: unknown };
 
@@ -249,6 +298,7 @@ export class VerificationService {
       throw new NotFoundException('Record not found');
     }
 
+    console.log('Delete successful:', { verification_id });
     return { success: true, deleted: typed.data };
   }
 }

@@ -9,7 +9,7 @@ import {
   IsArray,
   ArrayMinSize,
 } from 'class-validator';
-import { Transform, Expose } from 'class-transformer';
+import { Transform } from 'class-transformer';
 
 export class UpdateVerificationDto {
   @IsOptional()
@@ -17,12 +17,10 @@ export class UpdateVerificationDto {
   name?: string;
 
   @IsOptional()
-  @Expose({ name: 'studentId' })
   @IsString()
   student_id?: string;
 
   @IsOptional()
-  @Expose({ name: 'courseCompleted' })
   @IsString()
   course_completed?: string;
 
@@ -37,14 +35,12 @@ export class UpdateVerificationDto {
   email?: string;
 
   @IsOptional()
-  @Expose({ name: 'totalStudyTime' })
   @Matches(/^\d{4}$/, {
     message: 'total_study_time must be HHMM format — e.g. 0430',
   })
   total_study_time?: string;
 
   @IsOptional()
-  @Expose({ name: 'finalAssessmentScore' })
   @Transform(({ value }) => (value === undefined ? undefined : Number(value)))
   @IsInt()
   @Min(0)
@@ -52,19 +48,29 @@ export class UpdateVerificationDto {
   final_assessment_score?: number;
 
   @IsOptional()
-  @Expose({ name: 'cpdHoursCompleted' })
   @Transform(({ value }) => (value === undefined ? undefined : Number(value)))
   @IsInt()
   @Min(0)
   cpd_hours_completed?: number;
 
   @IsOptional()
-  @Expose({ name: 'courseInformation' })
   @IsString()
   course_information?: string;
 
   @IsOptional()
-  @Expose({ name: 'modulesCompleted' })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [value];
+      } catch {
+        // If it's a single module name as string, wrap in array
+        return [value];
+      }
+    }
+    return [];
+  })
   @IsArray({ message: 'Modules must be an array' })
   @ArrayMinSize(1, { message: 'At least one module is required' })
   @IsString({ each: true, message: 'Each module must be a string' })

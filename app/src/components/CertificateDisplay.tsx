@@ -19,17 +19,6 @@ interface Props {
   record: Record;
 }
 
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-        {label}
-      </span>
-      <span className="text-base text-gray-900">{value}</span>
-    </div>
-  );
-}
-
 export default function CertificateDisplay({ record }: Props) {
   // detect missing or null fields to provide helpful feedback
   const expectedKeys: Array<keyof Record> = [
@@ -37,10 +26,37 @@ export default function CertificateDisplay({ record }: Props) {
   ];
 
   const missing = expectedKeys.filter((k) => record[k] === null || record[k] === undefined);
+
+  // Parse modules - handle both string and array formats
+  const parseModules = (): string[] => {
+    if (Array.isArray(record.modulesCompleted)) {
+      return record.modulesCompleted;
+    }
+    if (typeof record.modulesCompleted === 'string') {
+      // Handle comma-separated or newline-separated modules
+      return record.modulesCompleted
+        .split(/[,\n]/)
+        .map((m) => m.trim())
+        .filter(Boolean);
+    }
+    return [];
+  };
+
+  const modules = parseModules();
+
   return (
     <div className="mx-auto">
       {/* Light blue hero panel like Alison */}
-      <div className="alison-hero rounded-2xl p-6 md:p-8 mb-10 bg-contain bg-no-repeat bg-center" style={{ backgroundImage: 'url(https://res.cloudinary.com/dekilw4yx/image/upload/v1779669679/light-blue-hero-background_jx5k6o.png)' }}>
+      <div 
+        className="rounded-2xl p-8 md:p-10 mb-10 bg-cover bg-center bg-no-repeat shadow-lg"
+        style={{ 
+          backgroundImage: 'url(https://res.cloudinary.com/dekilw4yx/image/upload/v1779669679/light-blue-hero-background_jx5k6o.png)',
+          minHeight: '420px',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'scroll',
+        }}
+      >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800 mb-3 md:mb-4">{record.name}</h2>
@@ -87,11 +103,6 @@ export default function CertificateDisplay({ record }: Props) {
               </div>
             </div>
           </div>
-
-          <div className="flex items-start justify-end">
-            {/* Illustration on the right (placeholder svg) */}
-            <img src="/images/hero-illustration.svg" alt="illustration" className="w-28 h-28 md:w-36 md:h-36 object-contain" />
-          </div>
         </div>
       </div>
 
@@ -101,8 +112,16 @@ export default function CertificateDisplay({ record }: Props) {
         <p className="text-base text-slate-700 leading-relaxed mb-6 whitespace-pre-wrap">{record.courseInformation}</p>
 
         <h3 className="text-2xl font-semibold text-slate-800 mb-4">Modules Completed</h3>
-        <div className="space-y-4">
-          <p className="text-base text-slate-700">{record.modulesCompleted}</p>
+        <div className="space-y-2">
+          {modules.length > 0 ? (
+            modules.map((module, idx) => (
+              <p key={idx} className="text-base font-semibold text-slate-700">
+                {module}
+              </p>
+            ))
+          ) : (
+            <p className="text-base text-slate-700">{record.modulesCompleted}</p>
+          )}
         </div>
       </div>
 

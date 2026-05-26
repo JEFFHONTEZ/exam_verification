@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from '@/lib/api';
-import { setTokenCookie } from '@/lib/utils';
+import { setTokenCookie, setRefreshTokenCookie } from '@/lib/utils';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -21,6 +21,9 @@ export default function AdminLoginPage() {
     try {
       const result = await signIn(email, password);
       setTokenCookie(result.access_token);
+      if (result.refresh_token) {
+        setRefreshTokenCookie(result.refresh_token);
+      }
       router.push('/admin/upload');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);

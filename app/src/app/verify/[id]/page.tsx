@@ -1,23 +1,8 @@
-import { getVerification } from '@/lib/api';
+import { getVerification, VerificationRecord } from '@/lib/api';
 import CertificateDisplay from '@/components/CertificateDisplay';
 import InvalidCertificate from '@/components/InvalidCertificate';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
-interface VerificationRecord {
-  verificationId: string | null;
-  name: string | null;
-  studentId: string | null;
-  courseCompleted: string | null;
-  dateOfCompletion: string | null;
-  email: string | null;
-  totalStudyTime: string | null;
-  finalAssessmentScore: number | null;
-  cpdHoursCompleted: number | null;
-  courseInformation: string | null;
-  modulesCompleted: string[] | null;
-  createdAt: string | null;
-}
 
 interface VerificationError {
   error: string;
@@ -68,9 +53,10 @@ export default async function VerifyPage({ params }: Props) {
           {/* If the API returned an error object, render InvalidCertificate with details */}
           {recordOrError && 'error' in recordOrError ? (
             <InvalidCertificate message={recordOrError.error} details={recordOrError.raw} />
+          ) : recordOrError && !('error' in recordOrError) ? (
+            <CertificateDisplay record={recordOrError} />
           ) : (
-            // recordOrError will be the normalized record or null
-            (recordOrError ? <CertificateDisplay record={recordOrError} /> : <InvalidCertificate />)
+            <InvalidCertificate />
           )}
         </div>
       </div>

@@ -26,12 +26,25 @@ export function getTokenFromCookie(): string {
   return match ? decodeURIComponent(match[1]) : '';
 }
 
+// Read the refresh_token cookie
+export function getRefreshTokenFromCookie(): string {
+  if (typeof document === 'undefined') return '';
+  const match = document.cookie.match(/refresh_token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 // Set the admin_token cookie (8h expiry)
 export function setTokenCookie(token: string): void {
   document.cookie = `admin_token=${encodeURIComponent(token)}; path=/; max-age=${8 * 60 * 60}; SameSite=Strict`;
 }
 
-// Remove the admin_token cookie
+// Set the refresh_token cookie (30d expiry)
+export function setRefreshTokenCookie(token: string): void {
+  document.cookie = `refresh_token=${encodeURIComponent(token)}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Strict`;
+}
+
+// Remove both cookies
 export function clearTokenCookie(): void {
   document.cookie = 'admin_token=; path=/; max-age=0';
+  document.cookie = 'refresh_token=; path=/; max-age=0';
 }

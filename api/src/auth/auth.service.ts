@@ -88,8 +88,23 @@ export class AuthService {
   }
 
   async getUser(token: string) {
+    console.log('getUser called with token length:', token.length);
     const { data, error } = await this.supabase.client.auth.getUser(token);
-    if (error || !data.user) return null;
+    
+    if (error) {
+      console.error('Supabase getUser error:', error);
+    }
+    
+    if (!data.user) {
+      console.warn('No user data returned from Supabase');
+    }
+    
+    if (error || !data.user) {
+      console.log('getUser returning null due to:', { hasError: !!error, hasUser: !!data.user });
+      return null;
+    }
+    
+    console.log('getUser success:', { userId: data.user.id });
     return data.user;
   }
 }

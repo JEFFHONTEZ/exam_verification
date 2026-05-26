@@ -49,10 +49,19 @@ export default function EditModal({ record, onClose, onSave }: Props) {
   const modulesArray = Array.isArray(record.modules_completed)
     ? record.modules_completed
     : typeof record.modules_completed === 'string'
-      ? record.modules_completed
-        .split(',')
-        .map((m) => m.trim())
-        .filter(Boolean)
+      ? (() => {
+          try {
+            // Try to parse as JSON array first
+            const parsed = JSON.parse(record.modules_completed);
+            return Array.isArray(parsed) ? parsed : [record.modules_completed];
+          } catch {
+            // Fall back to comma/newline split for plain text
+            return record.modules_completed
+              .split(/[,\n]/)
+              .map((m) => m.trim())
+              .filter(Boolean);
+          }
+        })()
       : [];
 
   const methods = useForm<FormValues>({

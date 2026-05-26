@@ -74,6 +74,23 @@ export class VerificationController {
     }
   }
 
+  // Dev helper: test the CamelToSnakePipe transformation without auth
+  @Post('test/transform')
+  async testCamelToSnakeTransform(@Body() dto: any) {
+    if (process.env.NODE_ENV === 'production') {
+      return { error: 'Not allowed in production' };
+    }
+
+    console.log('[TEST ENDPOINT] Received DTO:', dto);
+    console.log('[TEST ENDPOINT] DTO keys:', Object.keys(dto || {}));
+    
+    return {
+      message: 'Transformation test successful',
+      receivedKeys: Object.keys(dto || {}),
+      receivedDto: dto,
+    };
+  }
+
   // Dev helper: create a test record without auth to make quick local tests easier
   @Get('test/create')
   async createTest() {
@@ -101,7 +118,11 @@ export class VerificationController {
   // Admin only — update a record
   @Patch(':id')
   @UseGuards(SupabaseAuthGuard)
-  update(@Param('id') id: string, @Body() dto: UpdateVerificationDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateVerificationDto, @Req() req: Request) {
+    console.log(`Update request for verification_id: ${id}`, {
+      userId: (req as any).user?.id,
+      body: dto,
+    });
     return this.verificationService.update(id, dto);
   }
 
