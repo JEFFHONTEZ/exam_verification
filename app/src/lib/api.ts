@@ -182,6 +182,7 @@ export async function getVerification(id: string) {
 export async function listVerifications(
   token: string,
   opts?: { q?: string; page?: number; pageSize?: number },
+  maxRetries = 3,
 ) {
   ensureApiBase();
   const params = new URLSearchParams();
@@ -190,37 +191,78 @@ export async function listVerifications(
   if (opts?.pageSize) params.set('pageSize', String(opts.pageSize));
 
   const url = `${API_BASE}/api/verifications${params.toString() ? `?${params.toString()}` : ''}`;
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  } catch (err) {
-    // network error (CORS, connection refused, etc.)
-    console.error('listVerifications network error', { url, err });
-    throw new ApiError(0, `Network error fetching records: ${String(err)}`);
-  }
+  let lastError: Error | null = null;
 
-  if (res.ok) return res.json();
-
-  // try to read response body for debugging
-  let body: string;
-  let data: unknown;
-  try {
-    data = await res.json();
-    body = JSON.stringify(data);
-  } catch {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      body = await res.text();
-    } catch {
-      body = '<unable to read body>';
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) return res.json();
+
+      // Don't retry on 4xx client errors (bad request, unauthorized, etc.)
+      if (res.status >= 400 && res.status < 500) {
+        let data: unknown;
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+        const errorMessage = (data as RawApiRecord)?.message || (data as RawApiRecord)?.error || `Request failed with status ${res.status}`;
+        throw new ApiError(res.status, String(errorMessage), data);
+      }
+
+      // 5xx errors are retryable - only log if it's the final attempt
+      if (attempt === maxRetries - 1) {
+        let body: string;
+        let data: unknown;
+        try {
+          data = await res.json();
+          body = JSON.stringify(data);
+        } catch {
+          try {
+            body = await res.text();
+          } catch {
+            body = '<unable to read body>';
+          }
+        }
+        console.error('listVerifications server error after retries', { url, status: res.status, attempt: attempt + 1, maxRetries, body });
+      }
+
+      // If not the last attempt, wait and retry
+      if (attempt < maxRetries - 1) {
+        const delayMs = Math.pow(2, attempt) * 1000; // exponential backoff: 1s, 2s, 4s
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        continue;
+      }
+
+      // Final attempt failed - throw
+      const data = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, `Server error fetching records (HTTP ${res.status})`);
+    } catch (err) {
+      lastError = err as Error;
+
+      // If it's a client error, don't retry - throw immediately
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
+        throw err;
+      }
+
+      // Network error or server error - retry if not last attempt
+      if (attempt < maxRetries - 1) {
+        const delayMs = Math.pow(2, attempt) * 1000; // exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        continue;
+      }
     }
   }
-  
-  console.error('listVerifications failed', { url, status: res.status, body });
-  
-  const errorMessage = (data as RawApiRecord)?.message || (data as RawApiRecord)?.error || `Failed to fetch records`;
-  throw new ApiError(res.status, String(errorMessage), data);
+
+  // All retries exhausted
+  if (lastError instanceof ApiError) {
+    throw lastError;
+  }
+
+  throw new ApiError(0, `Network error fetching records after ${maxRetries} retries: ${String(lastError?.message || 'Unknown error')}`);
 }
 
 export async function updateVerification(id: string, data: Partial<CreateVerificationPayload>, token: string): Promise<RawApiRecord> {
