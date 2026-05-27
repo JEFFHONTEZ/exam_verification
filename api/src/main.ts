@@ -71,7 +71,7 @@ async function bootstrap() {
   // Allow the frontend origin in production, but be permissive in development
   if (process.env.NODE_ENV === 'production') {
     app.enableCors({
-      origin: process.env.FRONTEND_URL || 'https://exam-verification-xi.vercel.app',
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
       credentials: true,
     });
   } else {
