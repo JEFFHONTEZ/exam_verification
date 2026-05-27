@@ -7,6 +7,11 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Exam Verification',
   description: 'Certificate verification portal',
+  icons: {
+    icon: 'https://res.cloudinary.com/dekilw4yx/image/upload/v1779906356/Free_Online_Entrepreneurship_Courses___Alison_oyl76h.jpg',
+    shortcut: 'https://res.cloudinary.com/dekilw4yx/image/upload/v1779906356/Free_Online_Entrepreneurship_Courses___Alison_oyl76h.jpg',
+    apple: 'https://res.cloudinary.com/dekilw4yx/image/upload/v1779906356/Free_Online_Entrepreneurship_Courses___Alison_oyl76h.jpg',
+  },
 };
 
 export default function RootLayout({
