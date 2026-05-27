@@ -3,7 +3,7 @@ export default function Footer() {
     <footer style={{ backgroundColor: '#0b2442' }} className="text-gray-100 py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-3 sm:px-6">
         {/* Main Footer Content - 5 Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-8 mb-8 sm:mb-12 border-b pb-8 sm:pb-12" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-8 mb-8 sm:mb-12 border-b pb-8 sm:pb-12" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
           {/* Column 1: Certified Courses */}
           <div>
             <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-3 sm:mb-6 border-b pb-2 sm:pb-4" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>Certified Courses</h3>
@@ -40,7 +40,7 @@ export default function Footer() {
           </div>
 
           {/* Column 3: Quality Learning */}
-          <div className="hidden md:block">
+          <div>
             <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-3 sm:mb-6 border-b pb-2 sm:pb-4" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>Quality Learning</h3>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
               <li><a href="#" className="text-gray-300 hover:text-white">Accreditation</a></li>
@@ -56,7 +56,7 @@ export default function Footer() {
           </div>
 
           {/* Column 4: Career Resources */}
-          <div className="hidden lg:block">
+          <div>
             <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-3 sm:mb-6 border-b pb-2 sm:pb-4" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>Career Resources</h3>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
               <li><a href="#" className="text-gray-300 hover:text-white">Build Your Résumé</a></li>
@@ -72,7 +72,7 @@ export default function Footer() {
           </div>
 
           {/* Column 5: Discover More */}
-          <div className="hidden lg:block">
+          <div>
             <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-3 sm:mb-6 border-b pb-2 sm:pb-4" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>Discover More</h3>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
               <li><a href="#" className="text-gray-300 hover:text-white">Access Free LMS</a></li>
