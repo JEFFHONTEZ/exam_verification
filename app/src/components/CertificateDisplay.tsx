@@ -95,23 +95,32 @@ export default function CertificateDisplay({ record }: Props) {
 
             {/* stat boxes */}
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg bg-white p-4 shadow-sm">
-                <div className="sm:pr-4">
-                  <div className="text-sm font-semibold">Final Assessment Score</div>
-                  <div className="text-xs text-slate-500">Minimum 80% required to pass the final assessment</div>
+              <div className="rounded-xl bg-white border border-slate-300 p-4 flex items-center justify-between">
+                <div className="flex-1 pr-4">
+                  <div className="text-sm font-semibold text-slate-800">Final Assessment Score</div>
+                  <div className="text-[10px] text-slate-500 mt-1 uppercase tracking-tight">Alison courses requires at least 80% to pass the final assessment</div>
                 </div>
-                <div className="mt-3 sm:mt-0 text-3xl sm:text-4xl font-extrabold text-slate-800">{record.finalAssessmentScore}%</div>
+                <div className="flex items-center">
+                  <div className="w-px h-12 bg-slate-200 mr-4" />
+                  <div className="text-3xl md:text-4xl font-extrabold text-slate-800">{record.finalAssessmentScore}%</div>
+                </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg bg-white p-4 shadow-sm">
-                <div className="sm:pr-4">
-                  <div className="text-sm font-semibold">CPD Hours Completed</div>
-                  <div className="text-xs text-slate-500">CPD approved learning hours completed through this course</div>
+              <div className="rounded-xl bg-white border border-slate-300 p-4 flex items-center justify-between">
+                <div className="flex-1 pr-4">
+                  <div className="text-sm font-semibold text-slate-800">CPD Hours Completed</div>
+                  <div className="text-[10px] text-slate-500 mt-1 uppercase tracking-tight">CPD approved learning hours completed through this course</div>
                 </div>
-                <div className="mt-3 sm:mt-0 text-3xl sm:text-4xl font-extrabold text-slate-800">{record.cpdHoursCompleted || '1-2'}</div>
+                <div className="flex items-center">
+                  <div className="w-px h-12 bg-slate-200 mr-4" />
+                  <div className="text-3xl md:text-4xl font-extrabold text-slate-800 whitespace-nowrap">{record.cpdHoursCompleted || '1-2h'}</div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* right column reserved for badges/ratings in original design - keep empty for now to preserve layout */}
+          <div className="hidden lg:flex lg:flex-col" />
         </div>
       </div>
 
