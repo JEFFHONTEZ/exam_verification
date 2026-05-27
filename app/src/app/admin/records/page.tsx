@@ -235,17 +235,33 @@ export default function AdminRecordsPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {paginated.map((r) => (
-                      <tr key={r.verification_id} className="hover:bg-blue-50 transition">
+                      <tr
+                        key={r.verification_id}
+                        onClick={() => router.push(`/verify/${r.verification_id}`)}
+                        className="hover:bg-blue-50 transition cursor-pointer"
+                      >
                         <td className="px-6 py-4 text-xs font-mono text-gray-600">{r.verification_id.substring(0, 8)}...</td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{r.name}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{r.student_id}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{r.course_completed}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{r.final_assessment_score}%</td>
                         <td className="px-6 py-4 text-sm space-x-3">
-                          <button onClick={() => handleEdit(r)} className="text-blue-600 hover:text-blue-800 font-medium transition">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(r);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 font-medium transition"
+                          >
                             Edit
                           </button>
-                          <button onClick={() => handleDelete(r.verification_id)} className="text-red-600 hover:text-red-800 font-medium transition">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(r.verification_id);
+                            }}
+                            className="text-red-600 hover:text-red-800 font-medium transition"
+                          >
                             Delete
                           </button>
                         </td>
